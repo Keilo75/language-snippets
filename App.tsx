@@ -1,32 +1,42 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from './components/Header';
-import { FlatList, StyleSheet, View, Text } from 'react-native';
+import { FlatList, StyleSheet, View, StatusBar, Text, TouchableOpacity } from 'react-native';
 import { reducer, ISnippet } from './components/Reducer';
 import Snippet from './components/Snippet';
+import AddSnippet from './components/AddSnippet';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 export default function App() {
   const [state, dispatch] = useReducer(reducer, []);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const toggleModalVisiblity = () => {
+    setModalVisible((bool) => !bool);
+  };
 
   useEffect(() => {
-    const initialData = [
-      { id: '24', text: 'Guten Tag', translation: 'Bonjour' },
-      { id: '424', text: 'Wie gehts?', translation: 'Ca va?' },
-      { id: '4241413', text: 'Mir geht es gut', translation: 'Ca va bien.' },
-    ];
-
-    dispatch({ method: 'init', array: initialData });
+    AsyncStorage.getItem('snippets').then((value) => {
+      let initialData: ISnippet[] = value ? JSON.parse(value) : [];
+      dispatch({ method: 'init', array: initialData });
+    });
   }, []);
-
-  const handleNewSnippet = () => {
-    console.log('hi');
-  };
 
   return (
     <View style={styles.body}>
-      <Header title="Language Snippets" />
+      <Header title="Language Snippets">
+        <TouchableOpacity style={styles.btn} activeOpacity={0.5} onPress={toggleModalVisiblity}>
+          <Text style={[styles.text, styles.btnText]}>
+            <Icon name="plus" color="white" size={20} /> Create
+          </Text>
+        </TouchableOpacity>
+      </Header>
+
+      <AddSnippet modalVisibility={modalVisible} toggleModalVisiblity={toggleModalVisiblity} dispatch={dispatch} />
       <FlatList<ISnippet>
         data={state.sort((a, b) => a.text.localeCompare(b.text))}
         renderItem={({ item }) => <Snippet snippet={item} />}
+        style={styles.scroll}
       />
     </View>
   );
@@ -36,8 +46,19 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     backgroundColor: '#232b36',
+    marginTop: StatusBar.currentHeight,
   },
   text: {
     color: 'white',
   },
+  scroll: {
+    marginBottom: 15,
+  },
+  btn: {
+    backgroundColor: '#1dad76',
+    padding: 5,
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  btnText: { textAlign: 'center', fontSize: 20 },
 });

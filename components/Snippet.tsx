@@ -20,9 +20,10 @@ const Snippet: React.FC<Props> = ({ snippet }) => {
 const styles = StyleSheet.create({
   container: {
     margin: 15,
+    marginBottom: 0,
     backgroundColor: '#3e4c5e',
     alignSelf: 'stretch',
-    height: 70,
+    minHeight: 70,
     padding: 10,
   },
   text: {
